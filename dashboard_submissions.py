@@ -56,7 +56,6 @@ st.markdown(
 # ──────────────────────────────
 # 📋 PAGE CONFIG
 # ──────────────────────────────
-st.set_page_config(page_title="Submissions Dashboard", layout="wide")
 st.markdown('<h1><i class="fas fa-chart-pie"></i> Submissions Dashboard <small style="font-size:16px;">(Last 8 Months)</small></h1>', unsafe_allow_html=True)
 
 # ──────────────────────────────

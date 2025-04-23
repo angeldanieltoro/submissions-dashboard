@@ -44,32 +44,19 @@ df_all["Month"] = df_all["Date"].dt.month_name()
 df_all["Year"] = df_all["Date"].dt.year
 
 # ──────────────────────────────
-# 🎯 FILTERS IN SIDEBAR EXPANDER
+# 🎯 FILTERS
 # ──────────────────────────────
-with st.sidebar.expander("📁 Filters", expanded=True):
-    year = st.selectbox("📅 Year", sorted(df_all["Year"].unique(), reverse=True))
-    month = st.selectbox("🗓 Month", sorted(df_all[df_all["Year"] == year]["Month"].unique()))
-    employees = st.multiselect("👤 Employees", df_all["Name"].unique(), default=df_all["Name"].unique())
-
-    week_option = st.selectbox("🗓️ Select Week", ["All", "Week 1", "Week 2", "Week 3", "Week 4"])
-    selected_date = st.date_input("📆 Select a Date")
+st.sidebar.header("📁 Filters")
+year = st.sidebar.selectbox("📅 Year", sorted(df_all["Year"].unique(), reverse=True))
+month = st.sidebar.selectbox("🗓 Month", sorted(df_all[df_all["Year"] == year]["Month"].unique()))
+employees = st.sidebar.multiselect("👤 Employees", df_all["Name"].unique(), default=df_all["Name"].unique())
+selected_date = st.sidebar.date_input("📆 Select a Date")
 
 filtered = df_all[
     (df_all["Year"] == year) &
     (df_all["Month"] == month) &
     (df_all["Name"].isin(employees))
 ]
-
-# Apply week filtering
-if week_option != "All":
-    week_ranges = {
-        "Week 1": (1, 7),
-        "Week 2": (8, 14),
-        "Week 3": (15, 21),
-        "Week 4": (22, 31)
-    }
-    start_day, end_day = week_ranges[week_option]
-    filtered = filtered[filtered["Date"].dt.day.between(start_day, end_day)]
 
 # Apply specific date filter
 if selected_date:
@@ -90,26 +77,33 @@ with tab1:
 
 with tab2:
     st.markdown('<h3><i class="las la-chart-bar"></i> Daily Submissions Trend</h3>', unsafe_allow_html=True)
-    pivot = filtered.pivot(index="Date", columns="Name", values="Total Submissions")
-    fig_line = px.line(pivot, x=pivot.index, y=pivot.columns,
-                       title="Daily Submissions",
-                       template="plotly")
-    st.plotly_chart(fig_line, use_container_width=True)
+    if not filtered.empty:
+        pivot = filtered.pivot(index="Date", columns="Name", values="Total Submissions")
+        fig_line = px.line(pivot, x=pivot.index, y=pivot.columns,
+                           title="Daily Submissions",
+                           template="plotly")
+        st.plotly_chart(fig_line, use_container_width=True)
 
-    st.markdown('<h3><i class="las la-user"></i> Total Submissions by Employee</h3>', unsafe_allow_html=True)
-    totals = filtered.groupby("Name")["Total Submissions"].sum().reset_index()
-    fig_bar = px.bar(totals, x="Name", y="Total Submissions",
-                     title="Total Submissions",
-                     color="Total Submissions",
-                     template="plotly")
-    st.plotly_chart(fig_bar, use_container_width=True)
+        st.markdown('<h3><i class="las la-user"></i> Total Submissions by Employee</h3>', unsafe_allow_html=True)
+        totals = filtered.groupby("Name")["Total Submissions"].sum().reset_index()
+        fig_bar = px.bar(totals, x="Name", y="Total Submissions",
+                         title="Total Submissions",
+                         color="Total Submissions",
+                         template="plotly")
+        st.plotly_chart(fig_bar, use_container_width=True)
+    else:
+        st.warning("No data available for the selected filters.")
 
 with tab3:
     st.markdown('<h3><i class="fas fa-chart-pie"></i> Share of Submissions</h3>', unsafe_allow_html=True)
-    fig_pie = px.pie(totals, names="Name", values="Total Submissions",
-                     title="Submission Share",
-                     template="plotly")
-    st.plotly_chart(fig_pie, use_container_width=True)
+    if not filtered.empty:
+        totals = filtered.groupby("Name")["Total Submissions"].sum().reset_index()
+        fig_pie = px.pie(totals, names="Name", values="Total Submissions",
+                         title="Submission Share",
+                         template="plotly")
+        st.plotly_chart(fig_pie, use_container_width=True)
+    else:
+        st.warning("No data available for the selected filters.")
 
 # ──────────────────────────────
 # ✅ FOOTER

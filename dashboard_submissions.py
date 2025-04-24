@@ -1,3 +1,6 @@
+I would like you to update the script and generate a new one I could copy straight.
+This is my current script. If you see any faults go ahead and review and fix with #Notations
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px

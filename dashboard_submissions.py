@@ -3,10 +3,11 @@ import pandas as pd
 import plotly.express as px
 import os
 import json
-from google.oauth2.service_account import Credentials
 import gspread
+from google.oauth2.service_account import Credentials
+from datetime import datetime
 
-# ✅ MUST be the first Streamlit command
+# ✅ THIS MUST BE THE FIRST Streamlit COMMAND
 st.set_page_config(page_title="Submissions Dashboard", layout="wide")
 
 # ──────────────────────────────
@@ -18,7 +19,7 @@ st.markdown("""
     <!-- Iconoir -->
     <link href="https://cdn.jsdelivr.net/npm/iconoir@latest/css/iconoir.css" rel="stylesheet">
     <!-- Line Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
 """, unsafe_allow_html=True)
 
 # ──────────────────────────────
@@ -45,17 +46,16 @@ df_april["Year"] = df_april["Date"].dt.year
 df_april["Source File"] = "Google Sheets"
 
 # ──────────────────────────────
-# 📁 Load Excel Files for Other Months
+# 📁 Load Excel files (excluding April)
 # ──────────────────────────────
 dataframes = []
-
 for file in os.listdir():
-    if file.startswith("submissions_") and file.endswith(".xlsx"):
+    if file.startswith("submissions_") and file.endswith(".xlsx") and "april" not in file.lower():
         df = pd.read_excel(file)
         df["Source File"] = file
         dataframes.append(df)
 
-# ✅ Append April Google Sheet data
+# ✅ Append the April Google Sheet Data
 dataframes.append(df_april)
 
 if not dataframes:
@@ -78,33 +78,48 @@ if "selected_month" not in st.session_state:
 if "selected_date" not in st.session_state:
     st.session_state.selected_date = None
 
-st.sidebar.header("📁 Filters")
-year = st.sidebar.selectbox("📅 Year", sorted(df_all["Year"].unique(), reverse=True))
-month = st.sidebar.selectbox("🗓 Month", sorted(df_all[df_all["Year"] == year]["Month"].unique()))
+with st.sidebar:
+    st.header("📁 Filters")
+    year = st.selectbox("📅 Year", sorted(df_all["Year"].unique(), reverse=True))
+    month = st.selectbox("🗓 Month", sorted(df_all[df_all["Year"] == year]["Month"].unique()))
 
-if year != st.session_state.selected_year or month != st.session_state.selected_month:
-    st.session_state.selected_date = None
+    if year != st.session_state.selected_year or month != st.session_state.selected_month:
+        st.session_state.selected_date = None
 
-st.session_state.selected_year = year
-st.session_state.selected_month = month
+    st.session_state.selected_year = year
+    st.session_state.selected_month = month
 
-employees = st.sidebar.multiselect("👤 Employees", df_all["Name"].unique(), default=df_all["Name"].unique())
-selected_date = st.sidebar.date_input("📆 Select a Date", value=st.session_state.selected_date)
-st.session_state.selected_date = selected_date
+    employees = st.multiselect("👤 Employees", df_all["Name"].unique(), default=df_all["Name"].unique())
+    selected_date = st.date_input("📆 Select a Date", value=st.session_state.selected_date)
+    st.session_state.selected_date = selected_date
 
+    # ────────── CLEAR & REFRESH ──────────
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if st.button("🧹 Clear Filters"):
+            st.session_state.selected_date = None
+            st.experimental_rerun()
+    with col2:
+        if st.button("🔄 Refresh App"):
+            st.experimental_rerun()
+
+# Apply filters
 filtered = df_all[
     (df_all["Year"] == year) &
     (df_all["Month"] == month) &
     (df_all["Name"].isin(employees))
 ]
-
 if selected_date:
     filtered = filtered[filtered["Date"] == pd.to_datetime(selected_date)]
 
 # ──────────────────────────────
 # 🗂 TABS SECTION
 # ──────────────────────────────
-tab1, tab2, tab3 = st.tabs(["📄 Data Table", "📊 Charts", "🧩 Submission Share"])
+tab1, tab2, tab3 = st.tabs([
+    "📄 Data Table",
+    "📊 Charts",
+    "🧩 Submission Share"
+])
 
 with tab1:
     st.markdown('<h3><i class="iconoir-report-columns"></i> Filtered Data Table</h3>', unsafe_allow_html=True)
@@ -113,13 +128,14 @@ with tab1:
 with tab2:
     st.markdown('<h3><i class="las la-chart-bar"></i> Daily Submissions Trend</h3>', unsafe_allow_html=True)
     if not filtered.empty:
-        pivot = filtered.pivot(index="Date", columns="Name", values="Total Submissions")
+        grouped = filtered.groupby(["Date", "Name"])["Total Submissions"].sum().reset_index()
+        pivot = grouped.pivot(index="Date", columns="Name", values="Total Submissions")
         fig_line = px.line(pivot, x=pivot.index, y=pivot.columns, title="Daily Submissions", template="plotly")
         st.plotly_chart(fig_line, use_container_width=True)
 
         st.markdown('<h3><i class="las la-user"></i> Total Submissions by Employee</h3>', unsafe_allow_html=True)
         totals = filtered.groupby("Name")["Total Submissions"].sum().reset_index()
-        fig_bar = px.bar(totals, x="Name", y="Total Submissions", color="Total Submissions", template="plotly")
+        fig_bar = px.bar(totals, x="Name", y="Total Submissions", title="Total Submissions", color="Total Submissions", template="plotly")
         st.plotly_chart(fig_bar, use_container_width=True)
     else:
         st.warning("No data available for the selected filters.")
@@ -138,3 +154,7 @@ with tab3:
 # ──────────────────────────────
 st.markdown("<hr style='margin-top: 2em;'>", unsafe_allow_html=True)
 st.markdown("<center><small><i class='fas fa-code'></i> Built with Streamlit | Designed with ❤️ by You</small></center>", unsafe_allow_html=True)
+
+# ⏰ Last update timestamp
+now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+st.sidebar.markdown(f"<small>Last updated: {now}</small>", unsafe_allow_html=True)

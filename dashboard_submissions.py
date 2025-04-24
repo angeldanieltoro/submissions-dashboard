@@ -28,9 +28,21 @@ st.markdown('<h1><i class="fas fa-chart-pie"></i> Submissions Dashboard <small s
 # ──────────────────────────────
 # ☁️ Load April from Google Sheets
 # ──────────────────────────────
+import json
+from streamlit.runtime.secrets import secrets
+from google.oauth2.service_account import Credentials
+import gspread
+
+# Define the scope
 scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-creds = Credentials.from_service_account_file("google_credentials.json", scopes=scope)
+
+# Load credentials from Streamlit secrets
+creds_dict = json.loads(secrets["GOOGLE_SHEETS_CREDENTIALS"])
+creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
+
+# Authorize client
 client = gspread.authorize(creds)
+
 
 sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1b0CTtJPUQT_4MCaSzuUja6gPJS-nwZeSsezZaz3Z1gk")
 worksheet = sheet.worksheet("April2025")

@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import os
+from oauth2client.service_account import ServiceAccountCredentials  # ✅ Required for Google Sheets auth
+import gspread  # ✅ Required to connect to and read Google Sheets
 
 # ✅ THIS MUST BE THE FIRST Streamlit COMMAND
 st.set_page_config(page_title="Submissions Dashboard", layout="wide")
@@ -17,6 +19,7 @@ st.markdown("""
     <!-- Line Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
 """, unsafe_allow_html=True)
+
 
 # ──────────────────────────────
 # 📋 PAGE HEADER

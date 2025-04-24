@@ -26,6 +26,27 @@ st.markdown('<h1><i class="fas fa-chart-pie"></i> Submissions Dashboard <small s
 # ──────────────────────────────
 # 📁 Load Excel files
 # ──────────────────────────────
+
+# Set up Google Sheets credentials
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_name("google_credentials.json", scope)
+client = gspread.authorize(creds)
+
+# Open your Google Sheet and worksheet
+sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID_HERE")
+worksheet = sheet.worksheet("April2025")  # must match your Google Sheet tab name
+
+# Read the worksheet into a DataFrame
+april_data = worksheet.get_all_records()
+df_april = pd.DataFrame(april_data)
+
+# Format date fields
+df_april["Date"] = pd.to_datetime(df_april["Date"], errors="coerce")
+df_april["Month"] = df_april["Date"].dt.month_name()
+df_april["Year"] = df_april["Date"].dt.year
+df_april["Source File"] = "Google Sheets"
+
+# Load local Excel files
 dataframes = []
 for file in os.listdir():
     if file.startswith("submissions_") and file.endswith(".xlsx"):
@@ -33,10 +54,13 @@ for file in os.listdir():
         df["Source File"] = file
         dataframes.append(df)
 
+# ✅ Append the April Google Sheet Data
+dataframes.append(df_april)
+
+# Stop if still empty
 if not dataframes:
     st.warning("⚠️ No Excel files found.")
     st.stop()
-
 df_all = pd.concat(dataframes, ignore_index=True)
 df_all = df_all[df_all["Date"] != "TOTAL"]
 df_all["Date"] = pd.to_datetime(df_all["Date"], errors="coerce")

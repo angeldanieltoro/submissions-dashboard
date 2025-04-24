@@ -2,8 +2,9 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import os
-import gspread
+import json
 from google.oauth2.service_account import Credentials
+import gspread
 
 # ✅ MUST be the first Streamlit command
 st.set_page_config(page_title="Submissions Dashboard", layout="wide")
@@ -17,7 +18,7 @@ st.markdown("""
     <!-- Iconoir -->
     <link href="https://cdn.jsdelivr.net/npm/iconoir@latest/css/iconoir.css" rel="stylesheet">
     <!-- Line Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome.min.css">
 """, unsafe_allow_html=True)
 
 # ──────────────────────────────
@@ -28,21 +29,10 @@ st.markdown('<h1><i class="fas fa-chart-pie"></i> Submissions Dashboard <small s
 # ──────────────────────────────
 # ☁️ Load April from Google Sheets
 # ──────────────────────────────
-import json
-from streamlit.runtime.secrets import secrets
-from google.oauth2.service_account import Credentials
-import gspread
-
-# Define the scope
 scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-
-# Load credentials from Streamlit secrets
-creds_dict = json.loads(secrets["GOOGLE_SHEETS_CREDENTIALS"])
+creds_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
 creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
-
-# Authorize client
 client = gspread.authorize(creds)
-
 
 sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1b0CTtJPUQT_4MCaSzuUja6gPJS-nwZeSsezZaz3Z1gk")
 worksheet = sheet.worksheet("April2025")
@@ -92,7 +82,6 @@ st.sidebar.header("📁 Filters")
 year = st.sidebar.selectbox("📅 Year", sorted(df_all["Year"].unique(), reverse=True))
 month = st.sidebar.selectbox("🗓 Month", sorted(df_all[df_all["Year"] == year]["Month"].unique()))
 
-# Auto-clear selected_date if year/month changes
 if year != st.session_state.selected_year or month != st.session_state.selected_month:
     st.session_state.selected_date = None
 
@@ -100,7 +89,6 @@ st.session_state.selected_year = year
 st.session_state.selected_month = month
 
 employees = st.sidebar.multiselect("👤 Employees", df_all["Name"].unique(), default=df_all["Name"].unique())
-
 selected_date = st.sidebar.date_input("📆 Select a Date", value=st.session_state.selected_date)
 st.session_state.selected_date = selected_date
 

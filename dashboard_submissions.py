@@ -46,11 +46,31 @@ df_all["Year"] = df_all["Date"].dt.year
 # ──────────────────────────────
 # 🎯 FILTERS
 # ──────────────────────────────
+# Initialize session state
+if "selected_year" not in st.session_state:
+    st.session_state.selected_year = None
+if "selected_month" not in st.session_state:
+    st.session_state.selected_month = None
+if "selected_date" not in st.session_state:
+    st.session_state.selected_date = None
+
 st.sidebar.header("📁 Filters")
 year = st.sidebar.selectbox("📅 Year", sorted(df_all["Year"].unique(), reverse=True))
 month = st.sidebar.selectbox("🗓 Month", sorted(df_all[df_all["Year"] == year]["Month"].unique()))
+
+# Auto-clear selected_date if year or month changed
+if year != st.session_state.selected_year or month != st.session_state.selected_month:
+    st.session_state.selected_date = None
+
+# Update session state values
+st.session_state.selected_year = year
+st.session_state.selected_month = month
+
 employees = st.sidebar.multiselect("👤 Employees", df_all["Name"].unique(), default=df_all["Name"].unique())
-selected_date = st.sidebar.date_input("📆 Select a Date")
+
+# Date input and store it in session state
+selected_date = st.sidebar.date_input("📆 Select a Date", value=st.session_state.selected_date)
+st.session_state.selected_date = selected_date
 
 filtered = df_all[
     (df_all["Year"] == year) &

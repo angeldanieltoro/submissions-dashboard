@@ -48,7 +48,17 @@ with st.sidebar.expander("📁 Filters", expanded=True):
         key="selected_employee"
     )
 
-    selected_date = st.date_input("📆 Select a Specific Date", key="selected_date")
+# 📅 Select Date
+new_date = st.sidebar.date_input("📅 Select a Specific Date", value=st.session_state.get("selected_date"))
+
+# Auto-clear if Year/Month changes
+if (year != st.session_state.get("last_selected_year")) or (month != st.session_state.get("last_selected_month")):
+    st.session_state["selected_date"] = None
+
+# Save Date and Selections
+st.session_state["selected_date"] = new_date
+st.session_state["last_selected_year"] = year
+st.session_state["last_selected_month"] = month
 
     # Manual Refresh Button
     if st.button("🔄 Refresh App"):
@@ -62,8 +72,8 @@ filtered = df_all[
 ]
 
 # ✅ Apply Date Filter if selected
-if selected_date:
-    filtered = filtered[filtered["Date"] == pd.to_datetime(selected_date)]
+if st.session_state.get("selected_date"):
+    filtered = filtered[filtered["Date"] == pd.to_datetime(st.session_state["selected_date"])]
 
 # ✅ Main Layout
 if not filtered.empty:

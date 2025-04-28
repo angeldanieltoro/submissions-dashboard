@@ -22,11 +22,11 @@ creds_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
 creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
 client = gspread.authorize(creds)
 
-# ──────────────────────────────
-# 📚 Load monthly tabs from Google Sheets
-# ──────────────────────────────
-sheet_url = "https://docs.google.com/spreadsheets/d/1b0CTtJPUQT_4MCaSzuUja6gPJS-nwZeSsezZaz3Z1gk"
-sheet = client.open_by_url(sheet_url)
+# ______________________________________
+# 🔵 Load monthly tabs from Google Sheets
+# ______________________________________
+sheet_id = "1b0CTtJPUQT_4MCaSzuUja6gPJS-nwZeSsezZaz3Z1gk"
+sheet = client.open_by_key(sheet_id)
 
 tabs_to_load = [
     "September2024", "October2024", "November2024", "December2024",
@@ -45,10 +45,9 @@ for tab in tabs_to_load:
             df_tab["Date"] = pd.to_datetime(df_tab["Date"], errors="coerce")
             df_tab["Month"] = df_tab["Date"].dt.month_name()
             df_tab["Year"] = df_tab["Date"].dt.year
-            df_tab["Source File"] = tab
             dataframes.append(df_tab)
     except Exception as e:
-        errors.append(f"⚠️ Failed to load {tab}: {e}")
+        errors.append((tab, str(e)))
 
 # Check if at least one tab loaded
 if not dataframes:

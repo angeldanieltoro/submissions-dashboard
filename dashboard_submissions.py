@@ -79,16 +79,31 @@ if "selected_date" not in st.session_state:
     st.session_state.selected_date = None
 
 # Filters
-year = st.sidebar.selectbox("📅 Year", sorted(df_all["Year"].dropna().unique(), reverse=True), key="selected_year")
-month = st.sidebar.selectbox("🗓 Month", sorted(df_all[df_all["Year"] == year]["Month"].dropna().unique()), key="selected_month")
+year = st.sidebar.selectbox(
+    "📅 Year", 
+    sorted(df_all["Year"].dropna().unique(), reverse=True), 
+    key="selected_year"
+)
+month = st.sidebar.selectbox(
+    "🗓 Month", 
+    sorted(df_all[df_all["Year"] == year]["Month"].dropna().unique()), 
+    key="selected_month"
+)
+
+# 👤 Employees multiselect (fixed)
+employee_options = sorted(df_all["Name"].dropna().unique())
+selected_employees = st.session_state.get("selected_employee", employee_options)
 employees = st.sidebar.multiselect(
     "👤 Employees",
-    options=sorted(df_all["Name"].dropna().unique()),
-    default=sorted(df_all["Name"].dropna().unique()),
+    options=employee_options,
+    default=selected_employees,
     key="selected_employee"
 )
+
+# 📆 Select a specific date
 selected_date = st.sidebar.date_input("📆 Select a Specific Date", key="selected_date")
 
+# -----------------
 # Apply filtering logic
 filtered = df_all[
     (df_all["Year"] == year) &
@@ -99,7 +114,7 @@ filtered = df_all[
 # Date Filter if Selected
 if selected_date:
     filtered = filtered[filtered["Date"] == pd.to_datetime(selected_date)]
-
+    
 # ──────────────────────────────
 # 📊 Display Tabs
 # ──────────────────────────────

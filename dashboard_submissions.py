@@ -59,14 +59,9 @@ st.sidebar.header("📁 Filters")
 
 # Clear Filters Button
 if st.sidebar.button("🔄 Clear Filters"):
-    if "selected_year" in st.session_state:
-        del st.session_state["selected_year"]
-    if "selected_month" in st.session_state:
-        del st.session_state["selected_month"]
-    if "selected_employee" in st.session_state:
-        del st.session_state["selected_employee"]
-    if "selected_date" in st.session_state:
-        del st.session_state["selected_date"]
+    for key in ["selected_year", "selected_month", "selected_employee", "selected_date"]:
+        if key in st.session_state:
+            del st.session_state[key]
     st.experimental_rerun()
 
 # Refresh App Button
@@ -86,7 +81,12 @@ if "selected_date" not in st.session_state:
 # Filters
 year = st.sidebar.selectbox("📅 Year", sorted(df_all["Year"].dropna().unique(), reverse=True), key="selected_year")
 month = st.sidebar.selectbox("🗓 Month", sorted(df_all[df_all["Year"] == year]["Month"].dropna().unique()), key="selected_month")
-employees = st.sidebar.multiselect("👤 Employees", df_all["Name"].unique(), default=df_all["Name"].unique(), key="selected_employee")
+employees = st.sidebar.multiselect(
+    "👤 Employees",
+    options=sorted(df_all["Name"].dropna().unique()),
+    default=sorted(df_all["Name"].dropna().unique()),
+    key="selected_employee"
+)
 selected_date = st.sidebar.date_input("📆 Select a Specific Date", key="selected_date")
 
 # Apply filtering logic

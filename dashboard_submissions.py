@@ -56,13 +56,14 @@ if (year != st.session_state.get("last_selected_year")) or (month != st.session_
     st.session_state["selected_date"] = None
 
 # Save Date and Selections
+# Save Date and Selections
 st.session_state["selected_date"] = new_date
 st.session_state["last_selected_year"] = year
 st.session_state["last_selected_month"] = month
 
-    # Manual Refresh Button
-    if st.button("🔄 Refresh App"):
-        st.rerun()
+# 🔄 Manual Refresh Button
+if st.button("🔄 Refresh App"):
+    st.rerun()
 
 # ✅ Apply Filters
 filtered = df_all[
@@ -71,13 +72,13 @@ filtered = df_all[
     (df_all["Name"].isin(employees))
 ]
 
-# ✅ Apply Date Filter if selected
+# ✅ Apply Date Filter if Selected
 if st.session_state.get("selected_date"):
     filtered = filtered[filtered["Date"] == pd.to_datetime(st.session_state["selected_date"])]
 
-# ✅ Main Layout
+# 🖥️ Main Layout
 if not filtered.empty:
-    tab1, tab2, tab3 = st.tabs(["📄 Data Table", "📊 Charts", "🧩 Submission Share"])
+    tab1, tab2, tab3 = st.tabs(["📋 Data Table", "📈 Charts", "🌟 Submission Share"])
 
     with tab1:
         st.markdown('<h3><i class="iconoir-report-columns"></i> Filtered Data Table</h3>', unsafe_allow_html=True)
@@ -89,6 +90,7 @@ if not filtered.empty:
         fig_line = px.line(pivot, x=pivot.index, y=pivot.columns, title="Daily Submissions", template="plotly")
         st.plotly_chart(fig_line, use_container_width=True)
 
+    with tab3:
         st.markdown('<h3><i class="las la-user"></i> Total Submissions by Employee</h3>', unsafe_allow_html=True)
         totals = filtered.groupby("Name")["Total Submissions"].sum().reset_index()
         fig_bar = px.bar(totals, x="Name", y="Total Submissions", color="Total Submissions", title="Total Submissions", template="plotly")

@@ -32,9 +32,9 @@ if not df_all.empty:
     df_all["Year"] = df_all["Date"].dt.year
 
 # ✅ Filters Sidebar
-with st.sidebar.expander("Filters", expanded=True):
-    year = st.selectbox("Year", sorted(df_all["Year"].dropna().unique(), reverse=True), key="selected_year")
-    month = st.selectbox("Month", sorted(df_all[df_all["Year"] == year]["Month"].dropna().unique()), key="selected_month")
+with st.sidebar.expander("\ud83d\udcc1 Filters", expanded=True):
+    year = st.selectbox("\ud83d\udcc5 Year", sorted(df_all["Year"].dropna().unique(), reverse=True), key="selected_year")
+    month = st.selectbox("\ud83d\uddd3 Month", sorted(df_all[df_all["Year"] == year]["Month"].dropna().unique()), key="selected_month")
 
     employee_options = sorted(df_all["Name"].dropna().unique())
     selected_employees = st.session_state.get("selected_employee", employee_options)
@@ -42,26 +42,26 @@ with st.sidebar.expander("Filters", expanded=True):
         selected_employees = employee_options
 
     employees = st.multiselect(
-        "Employees",
+        "\ud83d\udc64 Employees",
         options=employee_options,
         default=selected_employees,
         key="selected_employee"
     )
 
-# ✅ Select Date
-new_date = st.sidebar.date_input("Select a Specific Date", value=st.session_state.get("selected_date"))
+# 📅 Select Date
+new_date = st.sidebar.date_input("\ud83d\uddd5\ufe0f Select a Specific Date", value=st.session_state.get("selected_date"))
 
-# ✅ Auto-clear if Year/Month changes
+# Auto-clear if Year/Month changes
 if (year != st.session_state.get("last_selected_year")) or (month != st.session_state.get("last_selected_month")):
     st.session_state["selected_date"] = None
 
-# ✅ Save Date and Selections
+# Save Date and Selections
 st.session_state["selected_date"] = new_date
 st.session_state["last_selected_year"] = year
 st.session_state["last_selected_month"] = month
 
-# ✅ Manual Refresh Button
-if st.button("Refresh App"):
+# 🔄 Manual Refresh Button
+if st.button("\ud83d\udd04 Refresh App"):
     st.rerun()
 
 # ✅ Apply Filters
@@ -75,9 +75,9 @@ filtered = df_all[
 if st.session_state.get("selected_date"):
     filtered = filtered[filtered["Date"] == pd.to_datetime(st.session_state["selected_date"])]
 
-# ✅ Main Layout
+# 🖥️ Main Layout
 if not filtered.empty:
-    tab1, tab2, tab3 = st.tabs(["Data Table", "Charts", "Submission Share"])
+    tab1, tab2, tab3 = st.tabs(["\ud83d\udccb Data Table", "\ud83d\udcc8 Charts", "\ud83c\udf1f Submission Share"])
 
     with tab1:
         st.markdown('<h3><i class="iconoir-report-columns"></i> Filtered Data Table</h3>', unsafe_allow_html=True)
@@ -100,7 +100,7 @@ if not filtered.empty:
         st.plotly_chart(fig_pie, use_container_width=True)
 
 else:
-    st.warning("No data available for the selected filters.")
+    st.warning("\u26a0\ufe0f No data available for the selected filters.")
 
 # ✅ Footer
 st.markdown("<hr style='margin-top: 2em;'>", unsafe_allow_html=True)

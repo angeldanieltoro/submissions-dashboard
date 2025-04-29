@@ -75,7 +75,7 @@ filtered = df_all[
 if st.session_state.get("selected_date"):
     filtered = filtered[filtered["Date"] == pd.to_datetime(st.session_state["selected_date"])]
 
-# 🖥 Main Layout
+#  Main Layout
 if not filtered.empty:
     tab1, tab2, tab3 = st.tabs(["\ud83d\udccb Data Table", "\ud83d\udcc8 Charts", "\ud83c\udf1f Submission Share"])
 

@@ -19,7 +19,7 @@ client = gspread.authorize(creds)
 
 sheet_id = "1b0CTtJPUQT_4MCaSzuUja6gPJS-nwZeSsezZaz3Z1gk"
 sheet = client.open_by_key(sheet_id)
-worksheet = sheet.sheet1  # Assuming combined sheet is the first tab
+worksheet = sheet.sheet1
 
 # Load Data
 sheet_data = worksheet.get_all_records()
@@ -51,7 +51,7 @@ with st.sidebar.expander("Filters", expanded=True):
 # Select Date
 new_date = st.sidebar.date_input("Select a Specific Date", value=st.session_state.get("selected_date"))
 
-# Auto-clear if Year or Month changes
+# Auto-clear if Year/Month changes
 if (year != st.session_state.get("last_selected_year")) or (month != st.session_state.get("last_selected_month")):
     st.session_state["selected_date"] = None
 

@@ -31,6 +31,9 @@ if not df_all.empty:
     df_all["Month"] = df_all["Date"].dt.month_name()
     df_all["Year"] = df_all["Date"].dt.year
 
+# 🔥 Remove duplicates
+    df_all.drop_duplicates(subset=["Name", "Date", "Total Submissions"], inplace=True)
+
 # Filters Sidebar
 with st.sidebar.expander("Filters", expanded=True):
     year = st.selectbox("Year", sorted(df_all["Year"].dropna().unique(), reverse=True), key="selected_year")

@@ -48,12 +48,18 @@ with st.sidebar.expander("Filters", expanded=True):
         key="selected_employee"
     )
 
-# Select Date
-new_date = st.sidebar.date_input("Select a Specific Date", value=st.session_state.get("selected_date"))
+    # Select Date
+    new_date = st.date_input("Select a Specific Date", value=st.session_state.get("selected_date"))
+    
+    # Add a Clear Date Button
+    if st.button("Clear Date"):
+        st.session_state["selected_date"] = None
+        new_date = None
 
-# Auto-clear if Year/Month changes
+# Auto-clear if Year or Month changes
 if (year != st.session_state.get("last_selected_year")) or (month != st.session_state.get("last_selected_month")):
     st.session_state["selected_date"] = None
+    new_date = None
 
 # Save Date and Selections
 st.session_state["selected_date"] = new_date

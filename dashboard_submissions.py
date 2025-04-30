@@ -19,19 +19,18 @@ client = gspread.authorize(creds)
 
 sheet_id = "1b0CTtJPUQT_4MCaSzuUja6gPJS-nwZeSsezZaz3Z1gk"
 sheet = client.open_by_key(sheet_id)
-worksheet = sheet.sheet1
+worksheet = sheet.worksheet("Submissions")  # Now using 'Submissions' tab instead of sheet1
 
-# Load Data
+# Load and Clean Data
 sheet_data = worksheet.get_all_records()
 df_all = pd.DataFrame(sheet_data)
 
-# Basic Cleaning
 if not df_all.empty:
     df_all["Date"] = pd.to_datetime(df_all["Date"], errors="coerce")
     df_all["Month"] = df_all["Date"].dt.month_name()
     df_all["Year"] = df_all["Date"].dt.year
 
-# 🔥 Remove duplicates
+    # Drop duplicates to avoid plotting errors
     df_all.drop_duplicates(subset=["Name", "Date", "Total Submissions"], inplace=True)
 
 # Filters Sidebar
@@ -53,7 +52,7 @@ with st.sidebar.expander("Filters", expanded=True):
 
     # Select Date
     new_date = st.date_input("Select a Specific Date", value=st.session_state.get("selected_date"))
-    
+
     # Add a Clear Date Button
     if st.button("Clear Date"):
         st.session_state["selected_date"] = None
